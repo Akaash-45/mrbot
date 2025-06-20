@@ -1,15 +1,15 @@
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
 import { getAuth, GoogleAuthProvider, GithubAuthProvider } from "firebase/auth";
+import { getEnvVar } from "./env";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDYQnRGnX2nxKTkQ__JQAwr7XHubUGnYvY",
-  authDomain: "mrbot-a6796.firebaseapp.com",
-  projectId: "mrbot-a6796",
-  storageBucket: "mrbot-a6796.firebasestorage.app",
-  messagingSenderId: "205573713777",
-  appId: "1:205573713777:web:9fb720ca8bd6586e7250d0",
-  measurementId: "G-EKWZGSRBD6"
+  apiKey: getEnvVar("VITE_FIREBASE_API_KEY"),
+  authDomain: getEnvVar("VITE_FIREBASE_AUTH_DOMAIN"),
+  projectId: getEnvVar("VITE_FIREBASE_PROJECT_ID"),
+  storageBucket: getEnvVar("VITE_FIREBASE_STORAGE_BUCKET"),
+  messagingSenderId: getEnvVar("VITE_FIREBASE_MESSAGING_SENDER_ID"),
+  appId: getEnvVar("VITE_FIREBASE_APP_ID"),
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "",
 };
 
 const app = initializeApp(firebaseConfig);

@@ -7,10 +7,6 @@ import {
   sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth, googleProvider, githubProvider } from "../lib/firebase";
-import {
-  validateFirebaseConfig,
-  getFirebaseProjectUrl,
-} from "../lib/firebase-validator";
 import toast from "react-hot-toast";
 import { X, Github, Eye, EyeOff } from "lucide-react";
 
@@ -88,18 +84,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setLoading(true);
 
     try {
-      // Validate Firebase configuration first
-      const validation = await validateFirebaseConfig();
-      if (!validation.isValid) {
-        console.error("Firebase configuration errors:", validation.errors);
-        toast.error(
-          "Firebase configuration error. Please check the console for details.",
-        );
-        validation.errors.forEach((error) => console.error(error));
-        setLoading(false);
-        return;
-      }
-
       if (isLogin) {
         await signInWithEmailAndPassword(auth, email, password);
         toast.success("Welcome back! Successfully signed in.");
@@ -112,19 +96,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       console.error("Authentication error:", error);
       const errorMessage = getFirebaseErrorMessage(error);
       toast.error(errorMessage);
-
-      // Show additional help for configuration errors
-      if (
-        error.code?.includes("auth/invalid-api-key") ||
-        error.code?.includes("auth/app-not-authorized")
-      ) {
-        setTimeout(() => {
-          toast.error(
-            `Please check Firebase console: ${getFirebaseProjectUrl()}`,
-            { duration: 8000 },
-          );
-        }, 1000);
-      }
     } finally {
       setLoading(false);
     }

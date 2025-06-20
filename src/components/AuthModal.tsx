@@ -12,7 +12,7 @@ import {
   getFirebaseProjectUrl,
 } from "../lib/firebase-validator";
 import toast from "react-hot-toast";
-import { X, Github, Eye, EyeOff, AlertTriangle } from "lucide-react";
+import { X, Github, Eye, EyeOff } from "lucide-react";
 
 interface AuthModalProps {
   isOpen: boolean;

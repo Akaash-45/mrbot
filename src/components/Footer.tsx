@@ -19,7 +19,12 @@ const Footer = () => {
               href="https://github.com/kmahesh18" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="p-2 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="p-2 rounded-full bg-gray-10You said:
+from where can i get client id and client secret for github cofiguraion login for firebase
+ChatGPT said:
+
+To enable GitHub authentication for your Firebase app, you need to obtain the Client ID and Client Secret from GitHub. Here’s how you can do it step-by-step:
+0 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               aria-label="GitHub"
               title="GitHub"
             >

@@ -38,6 +38,9 @@ export const validateFirebaseConfig = async () => {
           mode: "no-cors",
         },
       );
+        if (!response.ok) {
+            errors.push(`Firebase auth domain not accessible: ${authDomain}`);
+        }
       // If we get here without error, the domain is likely accessible
     } catch (error) {
       errors.push(`Firebase auth domain not accessible: ${authDomain}`);

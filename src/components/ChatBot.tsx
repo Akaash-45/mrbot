@@ -13,11 +13,11 @@ import {
   Menu,
   X,
   Trash2,
-  Sparkles,
   Moon,
   Sun,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import { MarkdownRenderer } from './MarkdownRenderer';
 
 interface Message {
   id: string;
@@ -72,6 +72,7 @@ export const ChatBot: React.FC = () => {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    const currentInput = inputText;
     setInputText("");
     setIsLoading(true);
 
@@ -89,7 +90,7 @@ export const ChatBot: React.FC = () => {
         body: JSON.stringify({
           contents: [
             {
-              parts: [{ text: inputText }],
+              parts: [{ text: currentInput }],
             },
           ],
         }),
@@ -162,7 +163,7 @@ export const ChatBot: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-white dark:bg-black transition-colors duration-300">
+    <div className="flex h-screen bg-gray-50 dark:bg-black transition-colors duration-300">
       {/* Sidebar */}
       <AnimatePresence>
         {isSidebarOpen && (
@@ -171,65 +172,67 @@ export const ChatBot: React.FC = () => {
             animate={{ x: 0 }}
             exit={{ x: -300 }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed left-0 top-0 h-full w-80 bg-gray-100 dark:bg-gray-900 border-r border-gray-300 dark:border-gray-800 shadow-xl z-40 p-6"
+            className="fixed left-0 top-0 h-full w-80 bg-white dark:bg-black border-r border-gray-200 dark:border-gray-700 shadow-2xl z-40 p-6"
           >
             <div className="flex justify-between items-center mb-8">
-              <div className="flex items-center space-x-2">
-                <Bot className="text-black dark:text-white" size={24} />
-                <h2 className="text-xl font-bold text-black dark:text-white">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                  <Bot className="text-white" size={20} />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                   MRBOT
                 </h2>
               </div>
               <button
                 onClick={() => setIsSidebarOpen(false)}
-                className="p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-lg transition-colors text-black dark:text-white"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors text-gray-600 dark:text-gray-400"
               >
                 <X size={20} />
               </button>
             </div>
 
             <div className="space-y-4">
-              <div className="p-4 bg-gray-200 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700">
-                <div className="flex items-center space-x-3 mb-2">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+              <div className="p-4 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 rounded-xl border border-blue-100 dark:border-gray-600">
+                <div className="flex items-center space-x-3 mb-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
                     <User size={20} className="text-white" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Signed in as:
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-medium">
+                      Signed in as
                     </p>
-                    <p className="font-medium text-black dark:text-white">
+                    <p className="font-semibold text-gray-900 dark:text-white">
                       {getUserDisplayName()}
                     </p>
                   </div>
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                   {user?.email}
                 </p>
               </div>
 
               <button
                 onClick={toggleTheme}
-                className="w-full bg-gray-200 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-black dark:text-white hover:bg-gray-300 dark:hover:bg-gray-700 p-3 rounded-lg flex items-center justify-center space-x-2 transition-colors"
+                className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 p-4 rounded-xl flex items-center justify-center space-x-3 transition-all shadow-sm"
               >
-                {isDark ? <Sun size={16} /> : <Moon size={16} />}
-                <span>{isDark ? "Light Mode" : "Dark Mode"}</span>
+                {isDark ? <Sun size={18} /> : <Moon size={18} />}
+                <span className="font-medium">{isDark ? "Light Mode" : "Dark Mode"}</span>
               </button>
 
               <button
                 onClick={clearChat}
-                className="w-full bg-gray-200 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-black dark:text-white hover:bg-gray-300 dark:hover:bg-gray-700 p-3 rounded-lg flex items-center justify-center space-x-2 transition-colors"
+                className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 p-4 rounded-xl flex items-center justify-center space-x-3 transition-all shadow-sm"
               >
-                <Trash2 size={16} />
-                <span>Clear Chat</span>
+                <Trash2 size={18} />
+                <span className="font-medium">Clear Chat</span>
               </button>
 
               <button
                 onClick={handleSignOut}
-                className="w-full bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800 p-3 rounded-lg flex items-center justify-center space-x-2 transition-colors"
+                className="w-full bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 p-4 rounded-xl flex items-center justify-center space-x-3 transition-all shadow-sm"
               >
-                <LogOut size={16} />
-                <span>Sign Out</span>
+                <LogOut size={18} />
+                <span className="font-medium">Sign Out</span>
               </button>
             </div>
           </motion.div>
@@ -239,7 +242,7 @@ export const ChatBot: React.FC = () => {
       {/* Overlay */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-30"
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
@@ -250,103 +253,115 @@ export const ChatBot: React.FC = () => {
         <motion.div
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className="bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-800 p-4 flex justify-between items-center shadow-sm"
+          className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-700 p-4 shadow-sm"
         >
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setIsSidebarOpen(true)}
-              className="p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-lg transition-colors text-black dark:text-white"
-            >
-              <Menu size={20} />
-            </button>
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                <Bot size={16} className="text-white" />
+          <div className="flex justify-between items-center max-w-6xl mx-auto">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setIsSidebarOpen(true)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors text-gray-600 dark:text-gray-400"
+              >
+                <Menu size={20} />
+              </button>
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                  <Bot size={20} className="text-white" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                    MRBOT
+                  </h1>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    AI Assistant
+                  </p>
+                </div>
               </div>
-              <h1 className="text-xl font-bold text-black dark:text-white">
-                MRBOT
-              </h1>
             </div>
-          </div>
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={toggleTheme}
-              className="p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-lg transition-colors text-black dark:text-white"
-            >
-              {isDark ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
-            <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-              <Sparkles size={16} className="text-blue-500" />
-              <span>Welcome, {getUserDisplayName()}</span>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={toggleTheme}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors text-gray-600 dark:text-gray-400"
+              >
+                {isDark ? <Sun size={20} /> : <Moon size={20} />}
+              </button>
+              <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span>Online</span>
+              </div>
             </div>
           </div>
         </motion.div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white dark:bg-black">
-          <AnimatePresence>
-            {messages.map((message) => (
+        <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-black">
+          <div className="max-w-4xl mx-auto p-4 space-y-6">
+            <AnimatePresence>
+              {messages.map((message) => (
+                <motion.div
+                  key={message.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className={`flex ${message.isUser ? "justify-end" : "justify-start"}`}
+                >
+                  <div className={`flex items-start space-x-3 max-w-[85%] ${message.isUser ? "flex-row-reverse space-x-reverse" : ""}`}>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                      message.isUser
+                        ? "bg-gradient-to-br from-blue-600 to-purple-600"
+                        : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600"
+                    }`}>
+                      {message.isUser ? (
+                        <User size={16} className="text-white" />
+                      ) : (
+                        <Bot size={16} className="text-gray-600 dark:text-gray-400" />
+                      )}
+                    </div>
+                    
+                    <div className={`rounded-2xl px-4 py-3 shadow-sm ${
+                      message.isUser
+                        ? "bg-gradient-to-br from-blue-600 to-purple-600 text-white"
+                        : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
+                    }`}>
+                      <div className="space-y-1">
+                        {message.isUser ? (
+                          <p className="leading-relaxed">{message.text}</p>
+                        ) : message.text.length > 100 ? (
+                          <MarkdownRenderer 
+                            content={message.text} 
+                            className="text-gray-900 dark:text-white leading-relaxed"
+                          />
+                        ) : (
+                          <p className="leading-relaxed">{message.text}</p>
+                        )}
+                        <p className={`text-xs ${
+                          message.isUser ? "text-blue-100" : "text-gray-500 dark:text-gray-400"
+                        }`}>
+                          {message.timestamp.toLocaleTimeString([], { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+
+            {isLoading && (
               <motion.div
-                key={message.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-                className={`flex ${message.isUser ? "justify-end" : "justify-start"}`}
+                className="flex justify-start"
               >
-                <div
-                  className={`max-w-[80%] ${message.isUser ? "order-2" : "order-1"}`}
-                >
-                  <div
-                    className={`flex items-start space-x-3 ${message.isUser ? "flex-row-reverse" : "flex-row"}`}
-                  >
-                    <div
-                      className={`p-2 rounded-full flex-shrink-0 ${
-                        message.isUser
-                          ? "bg-gradient-to-br from-blue-500 to-purple-600 text-white"
-                          : "bg-gray-200 dark:bg-gray-800 text-black dark:text-white"
-                      }`}
-                    >
-                      {message.isUser ? <User size={16} /> : <Bot size={16} />}
-                    </div>
-                    <div
-                      className={`p-4 rounded-2xl ${
-                        message.isUser
-                          ? "bg-gradient-to-br from-blue-500 to-purple-600 text-white"
-                          : "bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 text-black dark:text-white shadow-sm"
-                      }`}
-                    >
-                      <p className="whitespace-pre-wrap leading-relaxed">
-                        {message.text}
-                      </p>
-                      <p
-                        className={`text-xs mt-2 ${
-                          message.isUser ? "text-blue-100" : "text-gray-500 dark:text-gray-400"
-                        }`}
-                      >
-                        {message.timestamp.toLocaleTimeString()}
-                      </p>
-                    </div>
+                <div className="flex items-start space-x-3 max-w-[85%]">
+                  <div className="w-10 h-10 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl flex items-center justify-center">
+                    <Bot size={16} className="text-gray-600 dark:text-gray-400" />
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-
-          {isLoading && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex justify-start"
-            >
-              <div className="max-w-[80%]">
-                <div className="flex items-start space-x-3">
-                  <div className="p-2 rounded-full bg-gray-200 dark:bg-gray-800 text-black dark:text-white">
-                    <Bot size={16} />
-                  </div>
-                  <div className="p-4 rounded-2xl bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 shadow-sm">
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-2xl px-4 py-3 shadow-sm">
                     <div className="flex items-center space-x-2">
-                      <span className="text-black dark:text-white">Thinking</span>
+                      <span className="text-gray-600 dark:text-gray-400 text-sm">Thinking</span>
                       <div className="flex space-x-1">
                         {[0, 1, 2].map((i) => (
                           <motion.div
@@ -357,24 +372,24 @@ export const ChatBot: React.FC = () => {
                               duration: 1,
                               delay: i * 0.2,
                             }}
-                            className="w-2 h-2 bg-blue-500 rounded-full"
+                            className="w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"
                           />
                         ))}
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          )}
-          <div ref={messagesEndRef} />
+              </motion.div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
         </div>
 
         {/* Input Area */}
         <motion.div
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className="p-4 bg-gray-100 dark:bg-gray-900 border-t border-gray-300 dark:border-gray-800"
+          className="bg-white dark:bg-black border-t border-gray-200 dark:border-gray-700 p-4 shadow-lg"
         >
           <div className="max-w-4xl mx-auto">
             <div className="flex space-x-3">
@@ -384,16 +399,16 @@ export const ChatBot: React.FC = () => {
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Type your message..."
-                className="flex-1 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-black dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 text-base p-3 rounded-lg outline-none transition-colors placeholder-gray-500 dark:placeholder-gray-400"
+                className="flex-1 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 text-base p-4 rounded-xl outline-none transition-all placeholder-gray-500 dark:placeholder-gray-400"
                 disabled={isLoading}
                 autoFocus
               />
               <button
                 onClick={sendMessage}
                 disabled={isLoading || !inputText.trim()}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:text-gray-500 dark:disabled:text-gray-500 disabled:cursor-not-allowed px-6 rounded-lg flex items-center justify-center transition-all duration-200 transform hover:scale-105 disabled:hover:scale-100"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed px-6 rounded-xl flex items-center justify-center transition-all duration-200 transform hover:scale-105 disabled:hover:scale-100 shadow-lg"
               >
-                <Send size={18} />
+                <Send size={20} />
               </button>
             </div>
           </div>

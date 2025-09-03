@@ -17,7 +17,7 @@ import {
   Sun,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
-import { MarkdownRenderer } from './MarkdownRenderer';
+import { MarkdownRenderer } from "./MarkdownRenderer";
 
 interface Message {
   id: string;
@@ -54,58 +54,74 @@ export const ChatBot: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
-  const sendMessage = async () => {
-    if (!inputText.trim() || isLoading) return;
+  /**
+   * Sends a message to Gemini API with retry logic.
+   */
+  const sendMessage = async (retryCount = 0) => {
+    if (!inputText.trim() && retryCount === 0) return;
+    if (isLoading && retryCount === 0) return;
 
     if (!GEMINI_API_KEY) {
-      toast.error(
-        "API key not configured. Please check your environment variables.",
-      );
+      toast.error("API key not configured. Please check your environment variables.");
       return;
     }
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      text: inputText,
-      isUser: true,
-      timestamp: new Date(),
-    };
+    let currentInput = inputText;
 
-    setMessages((prev) => [...prev, userMessage]);
-    const currentInput = inputText;
-    setInputText("");
+    // Add user message only on first attempt
+    if (retryCount === 0) {
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        text: inputText,
+        isUser: true,
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, userMessage]);
+      currentInput = inputText;
+      setInputText("");
+    }
+
     setIsLoading(true);
 
-    // Focus the input after clearing
-    setTimeout(() => {
-      inputRef.current?.focus();
-    }, 0);
+    // Focus input after sending
+    if (retryCount === 0) {
+      setTimeout(() => inputRef.current?.focus(), 0);
+    }
 
     try {
       const response = await fetch(GEMINI_API_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          contents: [
-            {
-              parts: [{ text: currentInput }],
-            },
-          ],
+          contents: [{ parts: [{ text: currentInput }] }],
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(
-          errorData.error?.message || "Failed to get response from AI",
-        );
+
+        // 🔹 Handle quota exceeded explicitly with retry
+        if (response.status === 429 || errorData.error?.status === "RESOURCE_EXHAUSTED") {
+          if (retryCount < 3) {
+            const delay = Math.pow(2, retryCount) * 5000; // 5s, 10s, 20s
+            toast.error(
+              `Quota exceeded. Retrying in ${delay / 1000} seconds...`
+            );
+            setTimeout(() => sendMessage(retryCount + 1), delay);
+          } else {
+            toast.error("Quota still exceeded. Try again later.");
+            setIsLoading(false);
+          }
+          return;
+        }
+
+        throw new Error(errorData.error?.message || "Failed to get response from AI");
       }
 
       const data = await response.json();
       const aiResponse =
-        data.candidates[0]?.content?.parts[0]?.text ||
+        data.candidates?.[0]?.content?.parts?.[0]?.text ||
         "Sorry, I couldn't generate a response.";
 
       const aiMessage: Message = {
@@ -118,15 +134,10 @@ export const ChatBot: React.FC = () => {
       setMessages((prev) => [...prev, aiMessage]);
     } catch (error: any) {
       console.error("Error calling Gemini API:", error);
-      toast.error(
-        error.message || "Failed to get AI response. Please try again.",
-      );
+      toast.error(error.message || "Failed to get AI response. Please try again.");
     } finally {
       setIsLoading(false);
-      // Ensure focus returns to input after response
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 100);
+      setTimeout(() => inputRef.current?.focus(), 100);
     }
   };
 
@@ -141,7 +152,7 @@ export const ChatBot: React.FC = () => {
     try {
       await signOut(auth);
       toast.success("Signed out successfully");
-    } catch (error) {
+    } catch {
       toast.error("Error signing out. Please try again");
     }
   };
@@ -305,41 +316,51 @@ export const ChatBot: React.FC = () => {
                   transition={{ duration: 0.3 }}
                   className={`flex ${message.isUser ? "justify-end" : "justify-start"}`}
                 >
-                  <div className={`flex items-start space-x-3 max-w-[85%] ${message.isUser ? "flex-row-reverse space-x-reverse" : ""}`}>
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                      message.isUser
-                        ? "bg-gradient-to-br from-blue-600 to-purple-600"
-                        : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600"
-                    }`}>
+                  <div
+                    className={`flex items-start space-x-3 max-w-[85%] ${
+                      message.isUser ? "flex-row-reverse space-x-reverse" : ""
+                    }`}
+                  >
+                    <div
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                        message.isUser
+                          ? "bg-gradient-to-br from-blue-600 to-purple-600"
+                          : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600"
+                      }`}
+                    >
                       {message.isUser ? (
                         <User size={16} className="text-white" />
                       ) : (
                         <Bot size={16} className="text-gray-600 dark:text-gray-400" />
                       )}
                     </div>
-                    
-                    <div className={`rounded-2xl px-4 py-3 shadow-sm ${
-                      message.isUser
-                        ? "bg-gradient-to-br from-blue-600 to-purple-600 text-white"
-                        : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
-                    }`}>
+
+                    <div
+                      className={`rounded-2xl px-4 py-3 shadow-sm ${
+                        message.isUser
+                          ? "bg-gradient-to-br from-blue-600 to-purple-600 text-white"
+                          : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
+                      }`}
+                    >
                       <div className="space-y-1">
                         {message.isUser ? (
                           <p className="leading-relaxed">{message.text}</p>
                         ) : message.text.length > 100 ? (
-                          <MarkdownRenderer 
-                            content={message.text} 
+                          <MarkdownRenderer
+                            content={message.text}
                             className="text-gray-900 dark:text-white leading-relaxed"
                           />
                         ) : (
                           <p className="leading-relaxed">{message.text}</p>
                         )}
-                        <p className={`text-xs ${
-                          message.isUser ? "text-blue-100" : "text-gray-500 dark:text-gray-400"
-                        }`}>
-                          {message.timestamp.toLocaleTimeString([], { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
+                        <p
+                          className={`text-xs ${
+                            message.isUser ? "text-blue-100" : "text-gray-500 dark:text-gray-400"
+                          }`}
+                        >
+                          {message.timestamp.toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
                           })}
                         </p>
                       </div>
@@ -404,7 +425,7 @@ export const ChatBot: React.FC = () => {
                 autoFocus
               />
               <button
-                onClick={sendMessage}
+                onClick={() => sendMessage()}
                 disabled={isLoading || !inputText.trim()}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed px-6 rounded-xl flex items-center justify-center transition-all duration-200 transform hover:scale-105 disabled:hover:scale-100 shadow-lg"
               >
